@@ -1,0 +1,20 @@
+---
+name: Scheduled Workflow
+on:
+  schedule:
+    - cron: '0 0 * * 5'
+  workflow_dispatch:
+jobs:
+  scheduled-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create log file
+        run: |
+          echo "Scheduled run at $(date)" > log.txt
+
+      - name: Display log
+        run: |
+          cat log.txt
