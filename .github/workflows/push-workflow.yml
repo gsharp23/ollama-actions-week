@@ -26,3 +26,25 @@ jobs:
       - name: Custom message
         run: |
           echo "Guy Sharp - AICO cohort - one green check at a time"
+
+      - name: Read name file
+        run: |
+          echo "=== name.txt ==="
+          cat name.txt
+
+      - name: Read devops file
+        run: |
+          echo "=== devops.txt ==="
+          cat devops.txt
+
+      - name: Generate summary report
+        run: |
+          echo "SUMMARY REPORT" > summary.txt
+          echo "Generated: $(date)" >> summary.txt
+          echo "---" >> summary.txt
+          cat name.txt >> summary.txt
+          cat devops.txt >> summary.txt
+
+      - name: Display summary report
+        run: |
+          cat summary.txt
