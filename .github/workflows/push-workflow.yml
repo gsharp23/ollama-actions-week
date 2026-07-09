@@ -8,7 +8,20 @@ env:
   COURSE_NAME: "Code Platoon DevOps"
   COHORT: "AICO"
 jobs:
-  automate:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        run: |
+          test -f name.txt || exit 1
+          test -f devops.txt || exit 1
+          echo "All required files present"
+
+  build:
+    needs: setup
     runs-on: ubuntu-latest
     env:
       REPORT_TITLE: "AICO Week 11 Summary Report"
@@ -60,6 +73,21 @@ jobs:
           echo "---" >> summary.txt
           cat name.txt >> summary.txt
           cat devops.txt >> summary.txt
+
+      - name: Upload summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: summary-report
+          path: summary.txt
+
+  report:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download summary artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: summary-report
 
       - name: Display summary report
         run: |
