@@ -1,0 +1,30 @@
+---
+name: PR Workflow
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate files exist and are not empty
+        run: |
+          test -s name.txt || exit 1
+          test -s devops.txt || exit 1
+          echo "Files exist and have content"
+
+      - name: Print PR labels
+        run: |
+          echo 'Labels: ${{ toJSON(github.event.pull_request.labels) }}'
+
+      - name: Comment summary on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "Automated check passed: name.txt and devops.txt validated. Triggered by ${{ github.actor }}."
