@@ -29,29 +29,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Main branch only step
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "This push landed on main"
+
+      - name: Non-main branch step
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "This push landed on a feature branch"
+
+      - name: Check which files changed
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            personal:
+              - 'name.txt'
+              - 'devops.txt'
+
+      - name: Personal files changed step
+        if: steps.changes.outputs.personal == 'true'
+        run: |
+          echo "name.txt or devops.txt was modified in this push"
+
       - name: Create log file
+        id: create_log
         run: |
           echo "Workflow executed at $(date)" > log.txt
 
-      - name: Print working directory
+      - name: Cleanup on failure
+        if: failure()
         run: |
-          pwd
+          echo "A previous step failed - running cleanup"
 
-      - name: Display log contents
+      - name: Cohort conditional step
+        if: env.COHORT == 'AICO'
         run: |
-          cat log.txt
+          echo "Running AICO-specific step"
 
-      - name: Custom message
-        run: |
-          echo "Guy Sharp - AICO cohort - one green check at a time"
-
-      - name: Read name file
+      - name: Read personal files
         run: |
           echo "=== name.txt ==="
           cat name.txt
-
-      - name: Read devops file
-        run: |
           echo "=== devops.txt ==="
           cat devops.txt
 
