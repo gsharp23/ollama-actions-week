@@ -4,9 +4,14 @@ on:
   push:
     branches:
       - main
+env:
+  COURSE_NAME: "Code Platoon DevOps"
+  COHORT: "AICO"
 jobs:
   automate:
     runs-on: ubuntu-latest
+    env:
+      REPORT_TITLE: "AICO Week 11 Summary Report"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,9 +42,20 @@ jobs:
           echo "=== devops.txt ==="
           cat devops.txt
 
+      - name: Display all variables
+        run: |
+          echo "COURSE_NAME: $COURSE_NAME"
+          echo "COHORT: $COHORT"
+          echo "REPORT_TITLE: $REPORT_TITLE"
+          echo "Actor: ${{ github.actor }}"
+          echo "Repository: ${{ github.repository }}"
+
       - name: Generate summary report
         run: |
-          echo "SUMMARY REPORT" > summary.txt
+          echo "$REPORT_TITLE" > summary.txt
+          echo "Course: $COURSE_NAME | Cohort: $COHORT" >> summary.txt
+          echo "Triggered by: ${{ github.actor }}" >> summary.txt
+          echo "Repository: ${{ github.repository }}" >> summary.txt
           echo "Generated: $(date)" >> summary.txt
           echo "---" >> summary.txt
           cat name.txt >> summary.txt
