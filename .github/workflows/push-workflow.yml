@@ -112,3 +112,17 @@ jobs:
       - name: Display summary report
         run: |
           cat summary.txt
+
+  matrix-test:
+    needs: setup
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        environment: [dev, prod]
+    steps:
+      - name: Print matrix configuration
+        run: |
+          echo "Running on OS: ${{ matrix.os }}"
+          echo "Environment: ${{ matrix.environment }}"
