@@ -126,3 +126,15 @@ jobs:
         run: |
           echo "Running on OS: ${{ matrix.os }}"
           echo "Environment: ${{ matrix.environment }}"
+
+     - name: Success summary
+        if: success()
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "All jobs completed successfully." >> $GITHUB_STEP_SUMMARY
+          echo "Run by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Failure notification
+        if: failure()
+        run: |
+          echo "BUILD FAILED - check previous steps in this run"
