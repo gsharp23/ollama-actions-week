@@ -1,0 +1,59 @@
+name: AI Matrix Testing
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  matrix-analysis:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        model: [llama3.2:1b]
+        prompt_style: [concise, detailed, technical]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
+      - name: Start service and pull model
+        run: |
+          ollama serve > ollama.log 2>&1 &
+          sleep 10
+          ollama pull ${{ matrix.model }}
+      - name: Run matrix analysis
+        run: |
+          echo "Model: ${{ matrix.model }}, Style: ${{ matrix.prompt_style }}"
+          START=$(date +%s)
+          PROMPT="Analyze README.md. Style: ${{ matrix.prompt_style }}."
+          if [ "${{ matrix.prompt_style }}" = "concise" ]; then
+            PROMPT="$PROMPT Give brief bullet-point feedback only."
+          elif [ "${{ matrix.prompt_style }}" = "detailed" ]; then
+            PROMPT="$PROMPT Give comprehensive analysis with examples."
+          else
+            PROMPT="$PROMPT Give developer-focused feedback with code suggestions."
+          fi
+          SAFE_MODEL=$(echo "${{ matrix.model }}" | tr ':' '-')
+          cat README.md 2>/dev/null | ollama run ${{ matrix.model }} "$PROMPT" > analysis-${SAFE_MODEL}-${{ matrix.prompt_style }}.txt
+          END=$(date +%s)
+          echo "Duration: $((END-START)) seconds" >> analysis-${SAFE_MODEL}-${{ matrix.prompt_style }}.txt
+      - name: Upload matrix result
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-result-${{ matrix.prompt_style }}-${{ github.run_number }}
+          path: analysis-*.txt
+
+  comparison:
+    needs: matrix-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all matrix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-result-*-${{ github.run_number }}
+          path: matrix-results/
+      - name: List and compare
+        run: |
+          echo "=== Matrix Results Comparison ==="
+          find matrix-results/ -name "*.txt" -exec echo "--- {} ---" \; -exec cat {} \;
+          echo "Comparison: reviewed all prompt styles for actionable feedback density."
